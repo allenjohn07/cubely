@@ -1,53 +1,95 @@
 "use client";
 
-import React from "react";
-
-interface Solve {
-  id: string;
-  time: number;
-  scramble: string;
-  date: Date;
-  isDNF?: boolean;
-  isPlusTwo?: boolean;
-}
+import { cn } from "@/lib/utils";
+import { X, Hash, Clock } from "lucide-react";
+import { Solve } from "@/lib/types";
 
 interface SolveHistoryProps {
   solves: Solve[];
+  onDelete: (id: string) => void;
+  onTogglePenalty: (id: string) => void;
+  className?: string;
+  height?: string;
 }
 
-export const SolveHistory: React.FC<SolveHistoryProps> = ({ solves }) => {
-  const formatTime = (ms: number, isPlusTwo?: boolean) => {
-    let displayTime = ms;
-    if (isPlusTwo) displayTime += 2000;
-    return (displayTime / 1000).toFixed(2);
+export function SolveHistory({ solves, onDelete, onTogglePenalty, className, height }: SolveHistoryProps) {
+  const sortedSolves = [...solves].reverse();
+
+  const formatTime = (ms: number, penalty?: "none" | "+2") => {
+    const totalMs = penalty === "+2" ? ms + 2000 : ms;
+    return (totalMs / 1000).toFixed(2) + "s" + (penalty === "+2" ? "+" : "");
   };
 
   return (
-    <div className="bg-[#0f1115]/80 backdrop-blur-md rounded-xl p-6 w-72 h-64 border border-gray-800/50 shadow-2xl flex flex-col box-border">
-      <div className="flex justify-between items-center mb-4 text-gray-500 text-[10px] font-bold uppercase tracking-wider">
-        <span>History</span>
-        <span className="text-gray-600">{solves.length} Solves</span>
-      </div>
-      <div className="overflow-y-auto flex-1 pr-1 custom-scrollbar scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
-        {solves.length === 0 ? (
-          <div className="h-full flex items-center justify-center text-gray-700 text-[10px] uppercase font-black tracking-widest">
-            No solves yet
-          </div>
-        ) : (
-          solves.slice().reverse().map((solve, index) => (
-            <div key={solve.id} className="flex items-center justify-between py-2 border-b border-gray-800/20 group text-xs">
-              <span className="text-gray-600 tabular-nums w-6">{(solves.length - index).toString().padStart(2, '0')}</span>
-              <div className="flex-1 px-3">
-                <span className={`font-mono font-bold ${solve.isDNF ? "text-red-500/70 line-through" : "text-gray-200"}`}>
-                  {solve.isDNF ? "DNF" : formatTime(solve.time, solve.isPlusTwo)}
-                  {solve.isPlusTwo && <span className="text-[10px] ml-1 text-gray-500">+2</span>}
-                </span>
-              </div>
-              <button className="text-gray-700 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100 font-bold px-1">×</button>
-            </div>
-          ))
-        )}
+    <div 
+      className={cn("w-full border border-zinc-800 rounded-xl bg-zinc-900/20 flex flex-col overflow-hidden", className)}
+      style={{ height }}
+    >
+      <div className="overflow-y-auto overflow-x-hidden custom-scrollbar flex-1">
+        <table className="w-full text-left text-sm border-collapse table-fixed">
+          <thead className="sticky top-0 z-10">
+            <tr className="bg-zinc-900/95 backdrop-blur-sm border-b border-zinc-800 shadow-sm">
+              <th className="px-3 py-2.5 font-semibold text-zinc-400 w-12 text-nowrap">
+                <div className="flex items-center gap-2 text-[10px]">
+                  <Hash className="w-2.5 h-2.5" />
+                  No.
+                </div>
+              </th>
+              <th className="px-3 py-2.5 font-semibold text-zinc-400">
+                <div className="flex items-center gap-2 text-[10px]">
+                  <Clock className="w-2.5 h-2.5" />
+                  Time
+                </div>
+              </th>
+              <th className="px-3 py-2.5 font-semibold text-zinc-400 w-16 text-center text-[10px]">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-zinc-800/50">
+            {solves.length === 0 ? (
+              <tr>
+                <td colSpan={3} className="px-3 py-4 text-left text-zinc-500 text-[12px]">
+                  Start solving to see your times here.
+                </td>
+              </tr>
+            ) : (
+              sortedSolves.map((solve, idx) => (
+                <tr key={solve.id} className="hover:bg-zinc-800/20 transition-colors group">
+                  <td className="px-3 py-2.5 font-mono text-zinc-500 text-[10px]">#{solves.length - idx}</td>
+                  <td className="px-3 py-2.5">
+                    <span className={cn(
+                      "font-mono font-bold text-sm text-nowrap",
+                      solve.penalty === "+2" ? "text-red-400" : "text-white"
+                    )}>
+                      {formatTime(solve.time, solve.penalty)}
+                    </span>
+                  </td>
+                  <td className="px-3 py-2.5 text-center">
+                    <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <button 
+                        onClick={() => onTogglePenalty(solve.id)}
+                        className={cn(
+                          "px-1.5 py-0.5 rounded text-[10px] font-bold transition-all",
+                          solve.penalty === "+2" 
+                            ? "bg-red-500/20 text-red-500" 
+                            : "text-zinc-600 hover:bg-zinc-800 hover:text-zinc-300"
+                        )}
+                      >
+                        +2
+                      </button>
+                      <button 
+                        onClick={() => onDelete(solve.id)}
+                        className="p-1 rounded-md hover:bg-red-500/10 text-zinc-600 hover:text-red-500 transition-all"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
-};
+}
