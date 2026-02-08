@@ -7,21 +7,34 @@ import { CubeVisualizer2D } from "@/components/timer/CubeVisualizer2D";
 import { UserMenu } from "@/components/timer/UserMenu";
 import { useTimer } from "@/hooks/useTimer";
 import { generateScramble } from "@/lib/cubeLogic";
-import { Solve, UserProfile } from "@/lib/types";
-import { RefreshCw, LayoutPanelLeft, ChevronLeft } from "lucide-react";
+import { Solve, UserProfile, Session, WCAEvent } from "@/lib/types";
+import { RefreshCw, LayoutPanelLeft, ChevronLeft, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { motion } from "framer-motion";
-
+import { motion, Variants } from "framer-motion";
 export default function TimerPage() {
-  const [solves, setSolves] = useState<Solve[]>([]);
+  const [sessions, setSessions] = useState<Session[]>([
+    {
+      id: "session-1",
+      name: "Session 1",
+      event: "3x3x3",
+      solves: [],
+      dateCreated: new Date(),
+    }
+  ]);
+  const [currentSessionId, setCurrentSessionId] = useState("session-1");
   const [currentScramble, setCurrentScramble] = useState("");
   const [mounted, setMounted] = useState(false);
   const [user, setUser] = useState<UserProfile | null>(null);
 
+  const currentSession = useMemo(() => 
+    sessions.find(s => s.id === currentSessionId) || sessions[0],
+    [sessions, currentSessionId]
+  );
+
   useEffect(() => {
     setMounted(true);
-    setCurrentScramble(generateScramble());
+    setCurrentScramble(generateScramble(currentSession.event));
   }, []);
 
   const handleLogin = useCallback(() => {
@@ -35,29 +48,72 @@ export default function TimerPage() {
     setUser(null);
   }, []);
 
+  // Use the same animation variants as landing page for consistency
+  const FADE_UP_VARIANTS: Variants = {
+    hidden: { opacity: 0, y: 10 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" } },
+  };
+
   const handleSolveStop = useCallback((time: number) => {
     const newSolve: Solve = {
       id: Math.random().toString(36).substr(2, 9),
       time,
       date: new Date(),
     };
-    setSolves((prev) => [...prev, newSolve]);
-    setCurrentScramble(generateScramble());
-  }, []);
+    setSessions(prev => prev.map(s => 
+      s.id === currentSessionId ? { ...s, solves: [...s.solves, newSolve] } : s
+    ));
+    setCurrentScramble(generateScramble(currentSession.event));
+  }, [currentSessionId, currentSession.event]);
 
   const handleTogglePenalty = useCallback((id: string) => {
-    setSolves((prev) => prev.map(s => {
-      if (s.id === id) {
-        return { ...s, penalty: s.penalty === "+2" ? "none" : "+2" };
-      }
-      return s;
-    }));
+    setSessions(prev => prev.map(s => 
+      s.id === currentSessionId ? {
+        ...s,
+        solves: s.solves.map(solve => 
+          solve.id === id ? { ...solve, penalty: solve.penalty === "+2" ? "none" : "+2" } : solve
+        )
+      } : s
+    ));
+  }, [currentSessionId]);
+
+  const handleDeleteSolve = useCallback((id: string) => {
+    setSessions(prev => prev.map(s => 
+      s.id === currentSessionId ? {
+        ...s,
+        solves: s.solves.filter(solve => solve.id !== id)
+      } : s
+    ));
+  }, [currentSessionId]);
+
+  const handleAddSession = useCallback(() => {
+    const newSession: Session = {
+      id: `session-${Date.now()}`,
+      name: `Session ${sessions.length + 1}`,
+      event: "3x3x3",
+      solves: [],
+      dateCreated: new Date(),
+    };
+    setSessions(prev => [...prev, newSession]);
+    setCurrentSessionId(newSession.id);
+    setCurrentScramble(generateScramble("3x3x3"));
+  }, [sessions.length]);
+
+  const handleRenameSession = useCallback((id: string, newName: string) => {
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, name: newName } : s));
   }, []);
+
+  const handleSwitchEvent = useCallback((id: string, event: WCAEvent) => {
+    setSessions(prev => prev.map(s => s.id === id ? { ...s, event } : s));
+    if (id === currentSessionId) {
+      setCurrentScramble(generateScramble(event));
+    }
+  }, [currentSessionId]);
 
   const { time, state, start, stop, reset, setReady } = useTimer(handleSolveStop);
 
   const stats = useMemo(() => {
-    const times = solves.map(s => s.penalty === "+2" ? s.time + 2000 : s.time);
+    const times = currentSession.solves.map(s => s.penalty === "+2" ? s.time + 2000 : s.time);
     const best = times.length > 0 ? Math.min(...times) : 0;
     
     const getAo5 = () => {
@@ -69,7 +125,7 @@ export default function TimerPage() {
     };
 
     return { best, ao5: getAo5() };
-  }, [solves]);
+  }, [currentSession.solves]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -79,7 +135,7 @@ export default function TimerPage() {
         else if (state === "RUNNING") stop();
         else if (state === "STOPPED") reset();
       } else if (e.key === "Escape") reset();
-      else if (e.key === "r" || e.key === "R") setCurrentScramble(generateScramble());
+      else if (e.key === "r" || e.key === "R") setCurrentScramble(generateScramble(currentSession.event));
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -106,48 +162,51 @@ export default function TimerPage() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white flex flex-col p-4 md:p-8 font-sans selection:bg-blue-500/30 overflow-hidden relative">
-      {/* Back Button */}
-      <div className="absolute top-4 left-4 md:top-8 md:left-8 z-50">
-        <Link 
-          href="/"
-          className="group flex items-center gap-1.5 px-3 py-2 rounded-lg bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 transition-all text-zinc-400 hover:text-white"
-        >
-          <ChevronLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-          <span className="text-xs font-semibold uppercase tracking-wider">Back</span>
-        </Link>
-      </div>
-
-      {/* User Menu */}
-      <div className="absolute top-4 right-4 md:top-8 md:right-8 z-50">
-        <UserMenu user={user} onLogin={handleLogin} onLogout={handleLogout} />
-      </div>
+    <main className="flex-1 bg-black text-white flex flex-col p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-hidden relative">
+      {/* Background Glow - Same as landing page */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-orange-500/5 blur-[120px] rounded-full -z-0 pointer-events-none" />
 
       {/* Top: Scramble */}
-      <div className="flex flex-col items-center gap-2 mb-4">
-        <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-zinc-600">Current Scramble</span>
-        <div className="flex items-center justify-center gap-4 max-w-2xl w-full">
-          <p className="text-xl md:text-2xl font-mono text-zinc-100 tracking-wider text-center leading-tight">
+      <motion.div 
+        initial="hidden"
+        animate="show"
+        variants={FADE_UP_VARIANTS}
+        className="flex flex-col items-center gap-2 mb-4 relative z-0"
+      >
+        <span className="text-[10px] uppercase tracking-[0.4em] font-black text-zinc-600">Scramble</span>
+        <div className="flex items-center justify-center gap-4 max-w-2xl w-full px-4">
+          <p className={cn(
+            "font-mono text-white font-medium tracking-wider text-center leading-tight transition-all duration-300",
+            currentScramble.length > 250 ? "text-xs md:text-sm" : 
+            currentScramble.length > 180 ? "text-sm md:text-base" : 
+            currentScramble.length > 100 ? "text-base md:text-xl" : 
+            "text-xl md:text-3xl"
+          )}>
             {currentScramble}
           </p>
           <button 
-            onClick={() => setCurrentScramble(generateScramble())}
-            className="p-2 rounded-full hover:bg-zinc-800/50 text-zinc-600 hover:text-white transition-all flex-shrink-0"
+            onClick={() => setCurrentScramble(generateScramble(currentSession.event))}
+            className="p-2 md:p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-zinc-500 hover:text-orange-500 transition-all flex-shrink-0"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Main Content Area: Centered Timer with peripheral boxes */}
-      <div className="flex-1 relative flex items-center justify-center">
+      <div className="flex-1 relative flex flex-col items-center justify-center">
         {/* Left Peripheral: Solve History */}
-        <div className="hidden lg:block absolute left-0 bottom-0 w-72">
+        <div className="hidden lg:block absolute left-0 bottom-0 w-72 z-20">
           <SolveHistory 
-            solves={solves} 
-            onDelete={(id) => setSolves(prev => prev.filter(s => s.id !== id))}
+            currentSession={currentSession}
+            sessions={sessions}
+            onSwitchSession={setCurrentSessionId}
+            onAddSession={handleAddSession}
+            onRenameSession={handleRenameSession}
+            onSwitchEvent={handleSwitchEvent}
+            onDelete={handleDeleteSolve}
             onTogglePenalty={handleTogglePenalty}
-            height="415px"
+            height="520px"
           />
         </div>
 
@@ -157,27 +216,33 @@ export default function TimerPage() {
         </div>
 
         {/* Right Peripheral: Stats & Scramble Box */}
-        <div className="hidden lg:flex absolute right-0 bottom-0 w-72 flex-col gap-6">
+        <div className="hidden lg:flex absolute right-0 bottom-0 w-72 flex-col gap-6 z-20">
           {/* Quick Stats */}
           <div className="grid grid-cols-1 gap-3">
-            <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-0.5">Best</span>
-              <span className="text-2xl font-mono text-white">{(stats.best / 1000).toFixed(2)}s</span>
+            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-2xl p-5 shadow-xl">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-black block mb-2">Best Solves</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-mono text-white font-black">{(stats.best / 1000).toFixed(2)}</span>
+                <span className="text-sm text-zinc-600 font-mono">sec</span>
+              </div>
             </div>
-            <div className="bg-zinc-900/30 border border-zinc-800 rounded-xl p-3">
-              <span className="text-[10px] uppercase tracking-widest text-zinc-500 font-bold block mb-0.5">Ao5</span>
-              <span className="text-2xl font-mono text-white">{(stats.ao5 / 1000).toFixed(2)}s</span>
+            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-2xl p-5 shadow-xl border-l-orange-500/50">
+              <span className="text-[10px] uppercase tracking-[0.2em] text-orange-500/70 font-black block mb-2">Avg of 5</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-mono text-orange-500 font-black">{(stats.ao5 / 1000).toFixed(2)}</span>
+                <span className="text-sm text-zinc-600 font-mono">sec</span>
+              </div>
             </div>
           </div>
 
           {/* Scramble Box */}
           <div className="space-y-3">
-            <div className="flex items-end justify-start gap-2 text-zinc-500">
-              <LayoutPanelLeft className="w-3.5 h-3.5" />
-              <span className="text-[10px] uppercase tracking-widest font-bold">Scramble Box</span>
+            <div className="flex items-center gap-2 text-zinc-500 px-1">
+              <LayoutPanelLeft className="w-3 h-3" />
+              <span className="text-[10px] uppercase tracking-[0.2em] font-black">2D Preview</span>
             </div>
-            <div className="bg-zinc-900/30 border border-zinc-800 rounded-2xl p-4 flex justify-center">
-              <CubeVisualizer2D scramble={currentScramble} size={16} />
+            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-[32px] p-8 flex justify-center shadow-xl">
+              <CubeVisualizer2D scramble={currentScramble} size={18} />
             </div>
           </div>
         </div>
@@ -195,10 +260,15 @@ export default function TimerPage() {
             <span className="text-2xl font-mono text-white">{(stats.ao5 / 1000).toFixed(2)}s</span>
           </div>
         </div>
-        {solves.length > 0 && (
+        {currentSession.solves.length > 0 && (
           <SolveHistory 
-            solves={solves} 
-            onDelete={(id) => setSolves(prev => prev.filter(s => s.id !== id))} 
+            currentSession={currentSession}
+            sessions={sessions}
+            onSwitchSession={setCurrentSessionId}
+            onAddSession={handleAddSession}
+            onRenameSession={handleRenameSession}
+            onSwitchEvent={handleSwitchEvent}
+            onDelete={handleDeleteSolve}
             onTogglePenalty={handleTogglePenalty}
           />
         )}

@@ -1,3 +1,5 @@
+import { WCAEvent } from "./types";
+
 export type Color = 'white' | 'yellow' | 'orange' | 'red' | 'green' | 'blue';
 
 export type CubeState = {
@@ -109,13 +111,69 @@ export const getScrambledState = (scramble: string): CubeState => {
   }
   return state;
 };
-export const generateScramble = () => {
-  const moves = ["U", "D", "L", "R", "F", "B"];
+export const generateScramble = (event: WCAEvent = "3x3x3") => {
+  const movesByEvent: Record<string, string[]> = {
+    "2x2x2": ["U", "R", "F"],
+    "3x3x3": ["U", "D", "L", "R", "F", "B"],
+    "4x4x4": ["U", "D", "L", "R", "F", "B", "Uw", "Dw", "Lw", "Rw", "Fw", "Bw"],
+    "5x5x5": ["U", "D", "L", "R", "F", "B", "Uw", "Dw", "Lw", "Rw", "Fw", "Bw"],
+    "OH": ["U", "D", "L", "R", "F", "B"],
+    "3BLD": ["U", "D", "L", "R", "F", "B"],
+  };
+
+  const lengthsByEvent: Record<string, number> = {
+    "2x2x2": 9,
+    "3x3x3": 21,
+    "4x4x4": 40,
+    "5x5x5": 60,
+    "OH": 21,
+    "3BLD": 21,
+    "Megaminx": 70,
+    "Pyraminx": 11,
+    "Skewb": 9,
+    "Square-1": 12,
+  };
+
+  const moves = movesByEvent[event] || movesByEvent["3x3x3"];
+  const length = lengthsByEvent[event] || 21;
+  
+  if (event === "Megaminx") {
+    const megaminxMoves = ["R++", "R--", "D++", "D--"];
+    const scramble = [];
+    for (let i = 0; i < 7; i++) {
+      for (let j = 0; j < 10; j++) {
+        const move = megaminxMoves[Math.floor(Math.random() * 4)];
+        scramble.push(move);
+      }
+      scramble.push(Math.random() > 0.5 ? "U" : "U'");
+    }
+    return scramble.join(" ");
+  }
+
+  if (event === "Pyraminx") {
+    const pyraMoves = ["U", "L", "R", "B"];
+    const pyraTips = ["u", "l", "r", "b"];
+    const scramble = [];
+    let lastMove = "";
+    for (let i = 0; i < 8; i++) {
+      let move = pyraMoves[Math.floor(Math.random() * 4)];
+      while (move === lastMove) move = pyraMoves[Math.floor(Math.random() * 4)];
+      scramble.push(move + (Math.random() > 0.5 ? "" : "'"));
+      lastMove = move;
+    }
+    pyraTips.forEach(tip => {
+      if (Math.random() > 0.3) {
+        scramble.push(tip + (Math.random() > 0.5 ? "" : "'"));
+      }
+    });
+    return scramble.join(" ");
+  }
+
   const modifiers = ["", "'", "2"];
   const scrambleMoves = [];
   let lastMove = "";
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < length; i++) {
     let move = moves[Math.floor(Math.random() * moves.length)];
     while (move === lastMove) {
       move = moves[Math.floor(Math.random() * moves.length)];

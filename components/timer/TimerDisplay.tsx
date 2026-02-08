@@ -26,20 +26,20 @@ export function TimerDisplay({ time, state, className }: TimerDisplayProps) {
     switch (state) {
       case "READY": return "text-green-500";
       case "RUNNING": return "text-white";
-      case "STOPPED": return "text-blue-500";
-      default: return "text-zinc-500";
+      case "STOPPED": return "text-white/40";
+      default: return "text-zinc-600";
     }
   };
 
   return (
-    <div className={cn("flex flex-col items-center justify-center mb-32", className)}>
+    <div className={cn("flex flex-col items-center justify-center mb-8", className)}>
       <h1 className={cn(
         "text-[10rem] md:text-[14rem] font-mono leading-none tabular-nums select-none transition-colors duration-200",
         getTextColor()
       )}>
         {formatTime(time)}
       </h1>
-      <p className="text-zinc-600 uppercase tracking-[0.4em] text-xs mt-4">
+      <p className="text-zinc-600 uppercase tracking-[0.4em] text-[10px] font-bold mt-4">
         {state === "IDLE" && "Hold SPACE to start"}
         {state === "READY" && "Release to start"}
         {state === "RUNNING" && "Press SPACE to stop"}

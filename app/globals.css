@@ -5,15 +5,19 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 
   --color-background: #000000;
-  --color-foreground: #ffffff;
+  --color-foreground: #fafafa;
 
-  --color-accent: #3b82f6;
+  --color-accent: #f97316;
+  /* Orange-500 */
   --color-success: #22c55e;
+
+  --color-muted: #71717a;
+  --color-border: #27272a;
 }
 
 :root {
   --background: #000000;
-  --foreground: #ffffff;
+  --foreground: #fafafa;
 }
 
 body {
@@ -40,6 +44,22 @@ body {
   .custom-scrollbar::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
     border-radius: 10px;
+  }
+
+  @layer utilities {
+    @keyframes marquee {
+      0% {
+        transform: translateX(0);
+      }
+
+      100% {
+        transform: translateX(-50%);
+      }
+    }
+
+    .animate-marquee {
+      animation: marquee 60s linear infinite;
+    }
   }
 
   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
