@@ -241,8 +241,8 @@ export default function TimerPage() {
               <LayoutPanelLeft className="w-3 h-3" />
               <span className="text-[10px] uppercase tracking-[0.2em] font-black">2D Preview</span>
             </div>
-            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-[32px] p-8 flex justify-center shadow-xl">
-              <CubeVisualizer2D scramble={currentScramble} size={18} />
+            <div className="bg-zinc-900/40 backdrop-blur-sm border border-zinc-800 rounded-[32px] p-6 flex justify-center shadow-xl">
+              <CubeVisualizer2D scramble={currentScramble} size={14} />
             </div>
           </div>
         </div>
