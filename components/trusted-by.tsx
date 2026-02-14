@@ -28,16 +28,13 @@ export function TrustedBy() {
           {[...LOGOS, ...LOGOS, ...LOGOS].map((logo, idx) => (
             <span 
               key={idx} 
-              className={`text-white/30 font-black text-2xl md:text-3xl transition-colors hover:text-white/60 cursor-default ${logo.style}`}
+              className={`text-white/60 font-black text-2xl md:text-3xl transition-colors hover:text-white cursor-default ${logo.style}`}
             >
               {logo.name}
             </span>
           ))}
         </div>
         
-        {/* Gradient overlays for smooth fading at the edges */}
-        <div className="absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black to-transparent z-10 pointer-events-none" />
-        <div className="absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black to-transparent z-10 pointer-events-none" />
       </div>
     </div>
   );

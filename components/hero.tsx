@@ -12,8 +12,6 @@ const FADE_UP_ANIMATION_VARIANTS: Variants = {
 export function Hero() {
   return (
     <div className="relative flex flex-col items-center justify-center pt-24 pb-20 px-6 text-center overflow-hidden">
-      {/* Background Glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-orange-500/10 blur-[120px] rounded-full -z-10" />
       
       <motion.div
         initial="hidden"
@@ -47,7 +45,7 @@ export function Hero() {
           className="text-5xl md:text-8xl font-black tracking-tighter text-white mb-8 leading-[0.9]"
         >
           Master the Cube. <br />
-          <span className="text-white/40">Track every edge.</span>
+          <span className="text-white">Track every edge.</span>
         </motion.h1>
 
         {/* Subheading */}

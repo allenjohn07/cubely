@@ -64,7 +64,7 @@ export function FeaturesGrid() {
             viewport={{ once: true }}
             className="text-4xl md:text-5xl font-black tracking-tight text-white mb-4"
           >
-            Built for <span className="text-white/40">Performance.</span>
+            Built for <span className="text-white">Performance.</span>
           </motion.h2>
           <motion.p 
             initial={{ opacity: 0, y: 20 }}

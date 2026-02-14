@@ -155,16 +155,15 @@ export default function TimerPage() {
 
   if (!mounted) {
     return (
-      <main className="min-h-screen bg-black text-white flex flex-col p-4 md:p-8 font-sans overflow-hidden items-center justify-center">
+      <div className="min-h-[calc(100vh-64px)] text-white flex flex-col p-4 md:p-8 font-sans overflow-hidden items-center justify-center">
         <div className="animate-pulse text-zinc-800 font-mono text-xl tracking-widest uppercase">Initializing...</div>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="flex-1 bg-black text-white flex flex-col p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-hidden relative">
-      {/* Background Glow - Same as landing page */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-96 bg-orange-500/5 blur-[120px] rounded-full -z-0 pointer-events-none" />
+    <div className="flex-1 text-white flex flex-col p-4 md:p-8 font-sans selection:bg-orange-500/30 overflow-hidden relative">
+      {/* Background Glow Removed to keep background clean */}
 
       {/* Top: Scramble */}
       <motion.div 
@@ -186,7 +185,7 @@ export default function TimerPage() {
           </p>
           <button 
             onClick={() => setCurrentScramble(generateScramble(currentSession.event))}
-            className="p-2 md:p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-zinc-500 hover:text-orange-500 transition-all flex-shrink-0"
+            className="p-2 md:p-3 rounded-xl bg-zinc-900/50 border border-zinc-800 hover:bg-zinc-800 text-zinc-500 hover:text-orange-500 transition-all shrink-0"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -273,6 +272,6 @@ export default function TimerPage() {
           />
         )}
       </div>
-    </main>
+    </div>
   );
 }

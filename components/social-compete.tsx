@@ -43,7 +43,7 @@ export function SocialCompete() {
               </div>
               <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
                 Cubing is better <br />
-                <span className="text-white/40">with friends.</span>
+                <span className="text-white">with friends.</span>
               </h2>
               <p className="text-zinc-400 text-lg font-medium leading-relaxed max-w-lg">
                 Connect with the global speedcubing network. Share your progress, 
@@ -61,7 +61,7 @@ export function SocialCompete() {
                   transition={{ delay: idx * 0.1 }}
                   className="flex gap-6"
                 >
-                  <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
+                  <div className="shrink-0 w-12 h-12 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
                     <feature.icon className={`w-6 h-6 ${feature.color}`} />
                   </div>
                   <div>

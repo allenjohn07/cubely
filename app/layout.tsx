@@ -27,10 +27,28 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col relative`}
       >
-        <Navbar />
-        {children}
+        {/* Global Background Effects */}
+        <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+          {/* Grid Pattern */}
+          <div 
+            className="absolute inset-0 opacity-[0.15]" 
+            style={{ 
+              backgroundImage: `linear-gradient(to right, #27272a 1px, transparent 1px), linear-gradient(to bottom, #27272a 1px, transparent 1px)`,
+              backgroundSize: '40px 40px'
+            }} 
+          />
+          {/* Noise Texture */}
+          <div className="absolute inset-0 opacity-[0.03] bg-[url('https://grainy-gradients.vercel.app/noise.svg')] brightness-100" />
+        </div>
+
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <Navbar />
+          <main className="grow flex flex-col">
+            {children}
+          </main>
+        </div>
       </body>
     </html>
   );

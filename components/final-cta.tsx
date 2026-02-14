@@ -13,10 +13,6 @@ export function FinalCTA() {
           viewport={{ once: true }}
           className="relative bg-zinc-900 border border-zinc-800 p-12 md:p-20 rounded-[48px] overflow-hidden text-center shadow-2xl"
         >
-          {/* Decorative background elements */}
-          <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-orange-500/5 to-transparent -z-10" />
-          <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-500/10 blur-[80px] rounded-full" />
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full" />
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -31,7 +27,7 @@ export function FinalCTA() {
             
             <h2 className="text-4xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-tight">
               Ready to break your <br />
-              <span className="text-white/40 font-black">personal best?</span>
+              <span className="text-white font-black">personal best?</span>
             </h2>
             
             <p className="text-zinc-500 text-lg md:text-xl max-w-2xl mx-auto mb-12 font-medium">
